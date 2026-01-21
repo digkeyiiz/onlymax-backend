@@ -28,9 +28,10 @@ func main() {
 
 	// ทดสอบว่าเชื่อมต่อได้จริงไหม
 	if err := db.Ping(); err != nil {
-		log.Fatal("Database unreachable:", err)
+    log.Println("Database connection warning:", err) // แจ้งเตือนใน Log แต่ไม่ปิดแอป
+	} else {
+    fmt.Println("Database Connected Successfully!")
 	}
-	fmt.Println("Database Connected Successfully!")
 
 	app := fiber.New()
 	app.Use(cors.New())
