@@ -44,7 +44,7 @@ func main() {
 	// Render จะกำหนด PORT มาให้ เราต้องอ่านค่า Port นั้น
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+    port = "10000" // ค่าเริ่มต้นถ้าไม่มี env
 	}
-	log.Fatal(app.Listen(":" + port))
+	app.Listen(":" + port)
 }
