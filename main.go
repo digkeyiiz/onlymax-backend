@@ -11,7 +11,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// 1. ย้าย Struct มาไว้นอก main (ถูกต้องแล้ว)
 type User struct {
 	ID       int    `json:"id"`
 	Username string `json:"username"`
@@ -30,9 +29,10 @@ func main() {
 	}
 	defer db.Close()
 
-	// แก้ให้เป็น Warning เพื่อไม่ให้แอปตายตอน Build
 	if err := db.Ping(); err != nil {
 		log.Println("Database connection warning:", err)
+	} else {
+		fmt.Println("Database Connected Successfully!")
 	}
 
 	app := fiber.New()
@@ -42,7 +42,6 @@ func main() {
 		return c.SendString("ONLYMAX Server is Running!")
 	})
 
-	// --- ตรวจสอบตรงนี้: ต้องอยู่ภายในปีกกาของ main เท่านั้น ---
 	app.Get("/users", func(c *fiber.Ctx) error {
 		rows, err := db.Query("SELECT id, username, email FROM profiles")
 		if err != nil {
@@ -50,7 +49,7 @@ func main() {
 		}
 		defer rows.Close()
 
-		var users []User
+		var users []User = []User{} // กำหนดเป็น slice ว่างเพื่อไม่ให้ส่งค่า null กลับไป
 		for rows.Next() {
 			var u User
 			if err := rows.Scan(&u.ID, &u.Username, &u.Email); err != nil {
@@ -60,11 +59,12 @@ func main() {
 		}
 		return c.JSON(users)
 	})
-	// --------------------------------------------------
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "10000"
 	}
+	
+	fmt.Printf("Server is starting on port %s...\n", port)
 	log.Fatal(app.Listen(":" + port))
-} // ปิดท้ายฟังก์ชัน main (ตรวจเช็คปีกกาอันนี้ให้ดีครับ)
+}
