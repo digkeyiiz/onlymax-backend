@@ -49,3 +49,48 @@ func main() {
 	}
 	app.Listen(":" + port)
 }
+
+
+// โครงสร้างข้อมูลสำหรับรับ/ส่ง JSON
+type User struct {
+    ID       int    `json:"id"`
+    Username string `json:"username"`
+    Email    string `json:"email"`
+}
+
+// ... ในส่วน main function หลัง app := fiber.New() ...
+
+// 1. ดึงข้อมูล User ทั้งหมด (GET)
+app.Get("/users", func(c *fiber.Ctx) error {
+    rows, err := db.Query("SELECT id, username, email FROM profiles")
+    if err != nil {
+        return c.Status(500).SendString(err.Error())
+    }
+    defer rows.Close()
+
+    var users []User
+    for rows.Next() {
+        var u User
+        if err := rows.Scan(&u.ID, &u.Username, &u.Email); err != nil {
+            return err
+        }
+        users = append(users, u)
+    }
+    return c.JSON(users)
+})
+
+// 2. เพิ่ม User ใหม่ (POST)
+app.Post("/users", func(c *fiber.Ctx) error {
+    u := new(User)
+    if err := c.BodyParser(u); err != nil {
+        return c.Status(400).SendString("Invalid input")
+    }
+
+    query := "INSERT INTO profiles (username, email) VALUES ($1, $2) RETURNING id"
+    err := db.QueryRow(query, u.Username, u.Email).Scan(&u.ID)
+    if err != nil {
+        return c.Status(500).SendString(err.Error())
+    }
+
+    return c.Status(201).JSON(u)
+})
