@@ -12,44 +12,6 @@ import (
 	_ "github.com/lib/pq" // Driver สำหรับ PostgreSQL
 )
 
-func main() {
-	// 1. อ่านค่า Connection String จาก Environment Variable ของเครื่อง Server
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		log.Fatal("Error: DATABASE_URL environment variable is not set")
-	}
-
-	// 2. เชื่อมต่อ Database
-	db, err := sql.Open("postgres", dbURL)
-	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
-	}
-	defer db.Close()
-
-	// ทดสอบว่าเชื่อมต่อได้จริงไหม
-	if err := db.Ping(); err != nil {
-    log.Println("Database connection warning:", err) // แจ้งเตือนใน Log แต่ไม่ปิดแอป
-	} else {
-    fmt.Println("Database Connected Successfully!")
-	}
-
-	app := fiber.New()
-	app.Use(cors.New())
-
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("ONLYMAX Server is Running with Database!")
-	})
-
-	// ... ใส่ Code API อื่นๆ ต่อตรงนี้ ...
-
-	// Render จะกำหนด PORT มาให้ เราต้องอ่านค่า Port นั้น
-	port := os.Getenv("PORT")
-	if port == "" {
-    port = "10000" // ค่าเริ่มต้นถ้าไม่มี env
-	}
-	app.Listen(":" + port)
-}
-
 
 // โครงสร้างข้อมูลสำหรับรับ/ส่ง JSON
 type User struct {
@@ -94,3 +56,41 @@ app.Post("/users", func(c *fiber.Ctx) error {
 
     return c.Status(201).JSON(u)
 })
+
+func main() {
+	// 1. อ่านค่า Connection String จาก Environment Variable ของเครื่อง Server
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("Error: DATABASE_URL environment variable is not set")
+	}
+
+	// 2. เชื่อมต่อ Database
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+	defer db.Close()
+
+	// ทดสอบว่าเชื่อมต่อได้จริงไหม
+	if err := db.Ping(); err != nil {
+    log.Println("Database connection warning:", err) // แจ้งเตือนใน Log แต่ไม่ปิดแอป
+	} else {
+    fmt.Println("Database Connected Successfully!")
+	}
+
+	app := fiber.New()
+	app.Use(cors.New())
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("ONLYMAX Server is Running with Database!")
+	})
+
+	// ... ใส่ Code API อื่นๆ ต่อตรงนี้ ...
+
+	// Render จะกำหนด PORT มาให้ เราต้องอ่านค่า Port นั้น
+	port := os.Getenv("PORT")
+	if port == "" {
+    port = "10000" // ค่าเริ่มต้นถ้าไม่มี env
+	}
+	app.Listen(":" + port)
+}
