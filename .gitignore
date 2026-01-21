@@ -1,2 +1,13 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 main
+
+# Dependency directories
+vendor/
+
+# Env files
 .env
